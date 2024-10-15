@@ -2,7 +2,6 @@
 
 
 #include "WorldActor.h"
-
 #include "ComponentUtils.h"
 #include "VectorVMExperimental.h"
 #include "Components/DecalComponent.h"
@@ -24,9 +23,10 @@ void UWorldActor::BeginPlay()
 	{
 		DecalComponent->AttachToComponent(ParentActor->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 		DecalComponent->SetVisibility(false);
+
+		MinimapBlotComponent->AttachToComponent(ParentActor->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
 	}
 }
-
 
 // Called every frame
 void UWorldActor::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -53,6 +53,25 @@ void UWorldActor::HighlightActor()
 void UWorldActor::UnHighlightActor()
 {
 	DecalComponent->SetMaterial(0, PrimaryMaterial);
+}
+
+void UWorldActor::SetMinimapColor(const FLinearColor& MinimapColor)
+{
+	UMaterialInterface* Material = MinimapBlotComponent->GetMaterial(0);
+		
+	if(Material)
+	{
+		UMaterialInstanceDynamic* MatInst = UMaterialInstanceDynamic::Create(Material, Material);
+			
+		if (MatInst)
+		{
+			FName ParamName = TEXT("TeamColor");
+
+			MatInst->SetVectorParameterValue(ParamName, MinimapColor);
+			MinimapBlotComponent->SetMaterial(0, MatInst);
+			//UE_LOG(LogTemp, Warning, TEXT("Material of %s is %s"), *MeshComp->GetName(), *MeshComp->GetMaterial(0)->GetName());
+		}
+	}
 }
 
 void UWorldActor::ReceiveAnyDamage_Implementation(const float Damage, const EWeaponType WeaponType,
